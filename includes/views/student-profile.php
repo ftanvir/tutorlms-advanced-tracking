@@ -60,10 +60,15 @@ function fetch_video_progress_by_parameters($period = 'today', $start_date = '',
     // Execute the query and get results
     $results = $wpdb->get_results($query);
 
-    // ray('results', $results);
+    // foreach ($results as $row) {
+    //     $title = $row->lesson_title;
+    //     ray('title', $title);
+    // }
 
     return $results;
 }
+
+$fetched_data = fetch_video_progress_by_parameters();
 
 // Get parameters from the URL
 $period = isset($_GET['period']) ? sanitize_text_field($_GET['period']) : 'today';
@@ -429,7 +434,33 @@ $data_in_period = fetch_video_progress_by_parameters($period, $start_date, $end_
                                                 <div class="list-item-title tutor-fs-6 tutor-color-black tutor-py-12">
                                                     <?php esc_html_e('Duration', 'tutor-pro'); ?>
                                                 </div>
-                                                <!-- I want to display total watch time according to the lessson title -->
+
+                                                
+                                                
+                                                <?php if (is_array($lessons) && count($lessons)) : ?>
+                                                    <?php foreach ($lessons as $lesson) : ?>
+                                                        <?php foreach ($fetched_data as $row): ?>
+                                                            <?php if ($lesson->post_title == $row->lesson_title) : ?>
+                                                                <div class="list-item-checklist">
+                                                                    <div class="tutor-form-check">
+                                                                        <?php 
+                                                                            //convert the seconds to hours, minutes and seconds
+                                                                            $totalTime = $row->total_watch_time;
+                                                                            $hours = floor($totalTime / 3600);
+                                                                            $minutes = floor(($totalTime / 60) % 60);
+                                                                            $seconds = $totalTime % 60;
+                                                                            esc_html_e($hours . 'h ' . $minutes . 'm ' . $seconds . 's');
+                                                                        ?>
+                                                                    </div>
+                                                            <?php endif; ?>
+                                                        <?php endforeach; ?>
+                                                    <?php endforeach; ?>
+                                                <?php endif; ?>
+
+
+
+                                                
+                                                
                                                 
                                                 
 

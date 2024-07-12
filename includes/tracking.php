@@ -45,7 +45,7 @@ class Tracking {
         $course_id = isset($_POST['course_id']) ? sanitize_text_field($_POST['course_id']) : '';
         $lesson_title = isset($_POST['lesson_title']) ? sanitize_text_field($_POST['lesson_title']) : '';
 
-        ray('lesson_title', $lesson_title);
+        // ray('lesson_title', $lesson_title);
 
         // ray('video_id', $video_id);
 
@@ -74,9 +74,9 @@ class Tracking {
                 $wpdb->update(
                     $table_name,
                     array('total_watch_time' => $new_total_watch_time, 'time' => $time),
-                    array('video_id' => $video_id, 'user_id' => $user_id, 'date' => $date),
+                    array('video_id' => $video_id, 'user_id' => $user_id, 'date' => $date, 'course_id' => $course_id, 'lesson_title' => $lesson_title),
                     array('%f', '%s'),
-                    array('%s', '%d', '%s')
+                    array('%s', '%d', '%s', '%s', '%s')
                 );
             } else {
                 // Insert new record
@@ -85,6 +85,7 @@ class Tracking {
                     array(
                         'course_id' => $course_id, 
                         'video_id' => $video_id,
+                        'lesson_title' => $lesson_title,
                         'user_id' => $user_id,
                         'date' => $date,
                         'time' => $time,
@@ -92,6 +93,7 @@ class Tracking {
                     ),
                     array(
 
+                        '%s',
                         '%s',
                         '%s',
                         '%d',

@@ -40,9 +40,11 @@ class Assets {
      * Admin CSS and JS enqueue
      */
     public function admin_enqueue() {
-        wp_enqueue_style( 'tlms_at_assets_admin', TLMS_AT_PLUGIN_URL . 'assets/css/admin.css', null, TLMS_AT_VERSION );
+        //wp_enqueue_style( 'tlms_at_assets_admin', TLMS_AT_PLUGIN_URL . 'assets/css/admin.css', null, TLMS_AT_VERSION );
         wp_enqueue_script( 'tlms_at_assets_chartjs', 'https://cdn.jsdelivr.net/npm/chart.js', array(), null, true );  // Add Chart.js library
-        wp_enqueue_script( 'tlms_at_assets_admin' , TLMS_AT_PLUGIN_URL . 'assets/js/admin.js',  array( 'jquery', 'tlms_at_assets_chartjs' ), TLMS_AT_VERSION, true );  // Admin JS for Chart.js     
+
+
+        wp_enqueue_script( 'tlms_at_assets_admin' , TLMS_AT_PLUGIN_URL . 'assets/js/admin.js',  array( 'jquery' ), TLMS_AT_VERSION, true );  // Admin JS for Chart.js
     }
 
 }

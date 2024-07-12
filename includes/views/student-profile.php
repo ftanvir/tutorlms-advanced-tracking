@@ -10,7 +10,65 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
+function fetch_video_progress_by_parameters($period = 'today', $start_date = '', $end_date = '') {
+    global $wpdb;
 
+    // Table name
+    $table_name = $wpdb->prefix . 'tlms_at_video_progress';
+
+    // Get today's date in Y-m-d format based on WordPress timezone
+    $today = wp_date('Y-m-d');
+    $date_query = '';
+
+    if ($start_date && $end_date) {
+        // If both start_date and end_date are provided, use these dates
+        $start_date = sanitize_text_field($start_date);
+        $end_date = sanitize_text_field($end_date);
+
+        // Ensure dates are in valid format
+        if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $start_date) || !preg_match('/^\d{4}-\d{2}-\d{2}$/', $end_date)) {
+            return new WP_Error('invalid_date_format', 'Date format should be YYYY-MM-DD');
+        }
+
+        $date_query = $wpdb->prepare("date BETWEEN %s AND %s", $start_date, $end_date);
+    } else {
+        // Determine the date range based on the period
+        switch ($period) {
+            case 'today':
+                $date_query = $wpdb->prepare("date = %s", $today);
+                break;
+            case 'last7days':
+                $start_date = wp_date('Y-m-d', strtotime('-7 days'));
+                $date_query = $wpdb->prepare("date BETWEEN %s AND %s", $start_date, $today);
+                break;
+            case 'last30days':
+                $start_date = wp_date('Y-m-d', strtotime('-30 days'));
+                $date_query = $wpdb->prepare("date BETWEEN %s AND %s", $start_date, $today);
+                break;
+            default:
+                // Default to 'today' if the period is invalid or not specified
+                $date_query = $wpdb->prepare("date = %s", $today);
+                break;
+        }
+    }
+
+    // Prepare the query
+    $query = "SELECT * FROM $table_name WHERE $date_query";
+
+    // Execute the query and get results
+    $results = $wpdb->get_results($query);
+
+    return $results;
+}
+
+// Get parameters from the URL
+$period = isset($_GET['period']) ? sanitize_text_field($_GET['period']) : 'today';
+$start_date = isset($_GET['start_date']) ? sanitize_text_field($_GET['start_date']) : '';
+$end_date = isset($_GET['end_date']) ? sanitize_text_field($_GET['end_date']) : '';
+
+// Fetch data based on the parameters
+$data_in_period = fetch_video_progress_by_parameters($period, $start_date, $end_date);
+print_r($data_in_period);
 ?>
 
 <div id="tutor-report-student-details" class="tutor-report-common">
@@ -207,93 +265,12 @@ if (!defined('ABSPATH')) {
 
     <!-- Custom Date Range Select Code will be here -->
 
-    <form action="" method="post">
-
-
-        <div class="tutor-analytics-wrapper tutor-analytics-graph tutor-mt-12">
-
-            <div class="tutor-fs-5 tutor-fw-medium tutor-color-black tutor-d-flex tutor-align-center tutor-justify-between tutor-mb-16">
-                <div>
-                    <?php esc_html_e('Earning graph', 'tutor-pro'); ?>
-                </div>
-                <div class="tutor-admin-report-frequency-wrapper" style="min-width: 260px;">
-                    
-                <?php
-            $time_period = $active = isset($_GET['period']) ? $_GET['period'] : '';
-            $start_date  = isset($_GET['start_date']) ? sanitize_text_field($_GET['start_date']) : '';
-            $end_date    = isset($_GET['end_date']) ? sanitize_text_field($_GET['end_date']) : '';
-            if ('' !== $start_date) {
-                $start_date = tutor_get_formated_date('Y-m-d', $start_date);
-            }
-            if ('' !== $end_date) {
-                $end_date = tutor_get_formated_date('Y-m-d', $end_date);
-            }
-            $add_30_days  = tutor_utils()->sub_days_with_today('30 days');
-            $add_90_days  = tutor_utils()->sub_days_with_today('90 days');
-            $add_365_days = tutor_utils()->sub_days_with_today('365 days');
-
-            $current_frequency = isset($_GET['period']) ? $_GET['period'] : 'last30days';
-            $frequencies       = tutor_utils()->report_frequencies();
-            ?>
-            <div class="tutor-dropdown-select">
-                <div class="tutor-dropdown-select-options-container">
-                    <div class="tutor-frequencies">
-                        <?php foreach ($frequencies as $key => $frequency) : ?>
-                            <div class="tutor-dropdown-select-option" data-key="<?php echo esc_attr($key); ?>">
-                                <input type="radio" class="radio" name="category" value="<?php echo esc_attr($key); ?>" />
-                                <label for="select-item-1">
-                                    <div class="tutor-fs-7 tutor-color-secondary tutor-admin-report-frequency" data-key="<?php echo esc_attr($key); ?>">
-                                        <?php echo esc_html($frequency); ?>
-                                    </div>
-                                </label>
-                            </div>
-                        <?php endforeach; ?>
-                    </div>
-                </div>
-
-                <div class="tutor-dropdown-select-selected">
-                    <div>
-                        <?php if (isset($start_date) && ($end_date)) : ?>
-                            <div class="tutor-fs-6 tutor-fw-medium  tutor-color-black">
-                                <?php echo esc_html($frequencies['custom']); ?>
-                            </div>
-                            <div class="tutor-fs-7 tutor-color-muted">
-                                <?php echo esc_html(tutor_get_formated_date('M d', $start_date)); ?> -
-                                <?php echo esc_html(tutor_get_formated_date('M d, Y', $end_date)); ?>
-                            </div>
-                        <?php elseif ('last30days' === $current_frequency) : ?>
-                            <div class="tutor-fs-6 tutor-fw-medium  tutor-color-black">
-                                <?php echo esc_html($frequencies[$current_frequency]); ?>
-                            </div>
-                            <div class="tutor-fs-7 tutor-color-muted">
-                                <?php echo esc_html(date_i18n('M d, Y', strtotime(date_format($add_30_days, 'Y-m-d'))) . ' - ' . date_i18n('M d', strtotime(gmdate('Y-m-d')))); ?>
-                            </div>
-                        <?php elseif ('last90days' === $current_frequency) : ?>
-                            <div class="tutor-fs-6 tutor-fw-medium  tutor-color-black">
-                                <?php echo esc_html($frequencies[$current_frequency]); ?>
-                            </div>
-                            <div class="tutor-fs-7 tutor-color-muted">
-                                <?php echo esc_html(date_i18n('M d, Y', strtotime(date_format($add_90_days, 'Y-m-d'))) . ' - ' . date_i18n('M d', strtotime(gmdate('Y-m-d')))); ?>
-                            </div>
-                        <?php elseif ('last365days' === $current_frequency) : ?>
-                            <div class="tutor-fs-6 tutor-fw-medium  tutor-color-black">
-                                <?php echo esc_html($frequencies[$current_frequency]); ?>
-                            </div>
-                            <div class="tutor-fs-7 tutor-color-muted">
-                                <?php echo esc_html(date_i18n('M d, Y', strtotime(date_format($add_365_days, 'Y-m-d'))) . ' - ' . date_i18n('M d', strtotime(gmdate('Y-m-d')))); ?>
-                            </div>
-                        <?php else : ?>
-                            <div class="tutor-fs-6 tutor-fw-medium  tutor-color-black">
-                                <?php echo esc_html($frequencies[$current_frequency]); ?>
-                            </div>
-                        <?php endif; ?>
-
-                    </div>
-                </div>
+    <form action="" method="GET">
+        <div class="tutor-fs-5 tutor-fw-medium tutor-color-black tutor-d-flex tutor-align-center tutor-justify-between tutor-mb-16">
+            <div class="tutor-admin-report-frequency-wrapper" style="min-width: 260px;">
+                <?php tutor_load_template_from_custom_path( TUTOR_REPORT()->path . 'templates/elements/frequency.php' ); ?>
+                <div class="tutor-v2-date-range-picker inactive" style="width: 305px; position:absolute; z-index: 99;"></div>
             </div>
-
-                    <div class="tutor-v2-date-range-picker inactive" style="width: 305px; position:absolute; z-index: 99;"></div>
-                </div>
         </div>
     </form>
 

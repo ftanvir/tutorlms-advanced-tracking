@@ -1,6 +1,5 @@
 ;
 (function($) {
-    "use strict";
 
     if ($('#video-watch-time-chart').length) {
         alert

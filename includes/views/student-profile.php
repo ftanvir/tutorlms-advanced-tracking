@@ -10,6 +10,8 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
+
+
 function fetch_video_progress_by_parameters($period = 'today', $start_date = '', $end_date = '') {
     global $wpdb;
 
@@ -58,6 +60,8 @@ function fetch_video_progress_by_parameters($period = 'today', $start_date = '',
     // Execute the query and get results
     $results = $wpdb->get_results($query);
 
+    // ray('results', $results);
+
     return $results;
 }
 
@@ -68,7 +72,6 @@ $end_date = isset($_GET['end_date']) ? sanitize_text_field($_GET['end_date']) : 
 
 // Fetch data based on the parameters
 $data_in_period = fetch_video_progress_by_parameters($period, $start_date, $end_date);
-print_r($data_in_period);
 ?>
 
 <div id="tutor-report-student-details" class="tutor-report-common">
@@ -307,9 +310,6 @@ print_r($data_in_period);
                             <th width="15%">
                                 <?php esc_html_e('Progress', 'tutor-pro'); ?>
                             </th>
-                            <th>
-                                <?php esc_html_e('Duration', 'tutor-pro'); ?>
-                            </th>
                         </tr>
                         </thead>
 
@@ -359,9 +359,7 @@ print_r($data_in_period);
                                         </div>
                                     </div>
                                 </td>
-                                <td>
-                                    <p>Duration</p>
-                                </td>
+                                
                                 <td class="tutor-text-right expand-btn" data-th="Collapse">
                                     <button class="tutor-iconic-btn tutor-icon-angle-down tutor-fs-6 tutor-color-primary has-data-td-target" data-td-target="<?php echo esc_attr("tutor-student-course-$course->ID"); ?>"></button>
                                 </td>
@@ -370,7 +368,7 @@ print_r($data_in_period);
                                 <td colspan="100%" class="column-empty-state data-td-content" id="<?php echo esc_attr("tutor-student-course-$course->ID"); ?>" style="display: none;">
                                     <div class="td-toggle-content tutor-container-fluid">
                                         <div class="td-list-item-wrapper tutor-row">
-                                            <div class="tutor-col-md-4">
+                                            <div class="tutor-col-md-3">
                                                 <div class="list-item-title tutor-fs-6 tutor-color-black tutor-py-12">
                                                     <?php esc_html_e('Lesson', 'tutor-pro'); ?>
                                                 </div>
@@ -393,7 +391,7 @@ print_r($data_in_period);
 
 
 
-                                            <div class="tutor-col-md-4">
+                                            <div class="tutor-col-md-3">
                                                 <div class="list-item-title tutor-fs-6 tutor-color-black tutor-py-12">
                                                     <?php esc_html_e('View', 'tutor-pro'); ?>
                                                 </div>
@@ -410,7 +408,7 @@ print_r($data_in_period);
 
 
 
-                                            <div class="tutor-col-md-4">
+                                            <div class="tutor-col-md-3">
                                                 <div class="list-item-title tutor-fs-6 tutor-color-black tutor-py-12">
                                                     <?php esc_html_e('Download', 'tutor-pro'); ?>
                                                 </div>
@@ -423,6 +421,19 @@ print_r($data_in_period);
                                                         </div>
                                                     <?php endforeach; ?>
                                                 <?php endif; ?>
+                                            </div>
+
+                                            <!-- Below markup shows total duration for each videos id=working_in_progress -->
+                                            <div class="tutor-col-md-3">
+
+                                                <div class="list-item-title tutor-fs-6 tutor-color-black tutor-py-12">
+                                                    <?php esc_html_e('Duration', 'tutor-pro'); ?>
+                                                </div>
+                                                <!-- I want to display total watch time according to the lessson title -->
+                                                
+                                                
+
+                                                
                                             </div>
 
 

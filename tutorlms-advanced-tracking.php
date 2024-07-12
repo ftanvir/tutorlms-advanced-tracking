@@ -115,20 +115,21 @@ register_activation_hook(__FILE__, 'tlms_at_create_table');
 function tlms_at_create_table() {
     global $wpdb;
 
-    $table_name = $wpdb->prefix . 'tlms_at_video_progress';
-    $charset_collate = $wpdb->get_charset_collate();
+$table_name = $wpdb->prefix . 'tlms_at_video_progress';
+$charset_collate = $wpdb->get_charset_collate();
 
-    $sql = "CREATE TABLE IF NOT EXISTS $table_name (
-        id BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
-        course_id VARCHAR(255) NOT NULL,
-        video_id VARCHAR(255) NOT NULL,
-        user_id BIGINT(20) UNSIGNED NOT NULL,
-        date DATE NOT NULL,
-        time TIME NOT NULL,  
-        total_watch_time FLOAT NOT NULL,  
-        PRIMARY KEY (id),
-        UNIQUE KEY video_user_date (video_id, user_id, date)
-    ) $charset_collate;";
+$sql = "CREATE TABLE $table_name (
+    id BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+    course_id VARCHAR(255) NOT NULL,
+    video_id VARCHAR(255) NOT NULL,
+    lesson_title VARCHAR(255) NOT NULL,
+    user_id BIGINT(20) UNSIGNED NOT NULL,
+    date DATE NOT NULL,
+    time TIME NOT NULL,  
+    total_watch_time FLOAT NOT NULL,  
+    PRIMARY KEY (id),
+    UNIQUE KEY video_user_date (video_id, user_id, date)
+) $charset_collate;";
 
     require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
     dbDelta($sql);

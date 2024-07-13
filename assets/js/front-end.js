@@ -64,6 +64,35 @@
             });
 
         });
+
+        $(window).on('unload', function(){
+            if (playStartTime) {
+                totalPlayTime += new Date().getTime() - playStartTime;
+            }
+            $.ajax({
+                url: tlms_at_vars.tlms_at_ajax_url,
+                type: 'POST',
+                data: {
+                    action: 'tlms_at_track_video',
+                    nonce: tlms_at_vars.tlms_at_nonce,
+                    video_id: videoId,
+                    course_id: course_id,
+                    course_content_id: courseContentId,
+                    total_watch_time: totalPlayTime,  // Send total watch time
+                    lesson_title: lessonTitle,
+                    user_id: userId
+                },
+                success: function(response) {
+                    if (!response.success) {
+                        console.error('Tracking failed: ', response.data);
+                    }
+                },
+                error: function() {
+                    console.error('AJAX request failed.');
+                }
+            });
+
+        });
             
             
     });

@@ -56,14 +56,13 @@ function fetch_video_progress_by_parameters($period = 'today', $start_date = '',
 
     // Prepare the query
     $query = "SELECT * FROM $table_name WHERE $date_query";
-
     // Execute the query and get results
     $results = $wpdb->get_results($query);
 
     return $results;
 }
 
-$fetched_data = fetch_video_progress_by_parameters();
+// $fetched_data = fetch_video_progress_by_parameters();
 
 // Get parameters from the URL
 $period = isset($_GET['period']) ? sanitize_text_field($_GET['period']) : 'today';
@@ -72,6 +71,7 @@ $end_date = isset($_GET['end_date']) ? sanitize_text_field($_GET['end_date']) : 
 
 // Fetch data based on the parameters
 $data_in_period = fetch_video_progress_by_parameters($period, $start_date, $end_date);
+
 ?>
 
 <div id="tutor-report-student-details" class="tutor-report-common">
@@ -430,8 +430,8 @@ $data_in_period = fetch_video_progress_by_parameters($period, $start_date, $end_
                                                     <?php esc_html_e('Duration', 'tutor-pro'); ?>
                                                 </div>
                                                 <!-- Show duration for each courses lesson's -->
-                                                <?php if(is_array($fetched_data)): ?>
-                                                        <?php foreach($fetched_data as $row): ?>
+                                                <?php if(is_array($data_in_period)): ?>
+                                                        <?php foreach($data_in_period as $row): ?>
                                                             <?php if($row->course_id == $course->ID): ?>
                                                                 <?php foreach($lessons as $lesson): ?>
                                                                     <?php if($lesson->ID == $row->course_content_id): ?>

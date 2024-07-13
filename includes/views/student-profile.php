@@ -27,6 +27,9 @@ function fetch_video_progress_by_parameters($period = 'today', $start_date = '',
         $start_date = sanitize_text_field($start_date);
         $end_date = sanitize_text_field($end_date);
 
+        $start_date = date('Y-m-d', strtotime($start_date));
+        $end_date = date('Y-m-d', strtotime($end_date));
+
         // Ensure dates are in valid format
         if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $start_date) || !preg_match('/^\d{4}-\d{2}-\d{2}$/', $end_date)) {
             return new WP_Error('invalid_date_format', 'Date format should be YYYY-MM-DD');
@@ -61,8 +64,6 @@ function fetch_video_progress_by_parameters($period = 'today', $start_date = '',
 
     return $results;
 }
-
-// $fetched_data = fetch_video_progress_by_parameters();
 
 // Get parameters from the URL
 $period = isset($_GET['period']) ? sanitize_text_field($_GET['period']) : 'today';
@@ -430,7 +431,21 @@ $data_in_period = fetch_video_progress_by_parameters($period, $start_date, $end_
                                                     <?php esc_html_e('Duration', 'tutor-pro'); ?>
                                                 </div>
                                                 <!-- Show duration for each courses lesson's -->
-                                                <?php if(is_array($data_in_period)): ?>
+                                                <?php if(empty($data_in_period)): ?>
+                                                    <?php foreach($lessons as $lesson): ?>
+                                                        <div class="list-item-checklist">
+                                                            <div class="tutor-form-check">
+                                                                <?php 
+                                                                    $hours = 0;
+                                                                    $minutes = 0;
+                                                                    $seconds = 0;
+                                                                    esc_html_e($hours . 'h ' . $minutes . 'm ' . $seconds . 's');
+                                                                ?>
+                                                            </div>
+                                                        </div>
+                                                    <?php endforeach; ?>
+                                                <?php endif; ?>
+                                                <?php if(is_array($data_in_period) && !empty($data_in_period)): ?>
                                                         <?php foreach($data_in_period as $row): ?>
                                                             <?php if($row->course_id == $course->ID): ?>
                                                                 <?php foreach($lessons as $lesson): ?>

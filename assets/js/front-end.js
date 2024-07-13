@@ -9,6 +9,9 @@
         let videoId = $('#tutorlms-advanced-tracking').data('video-id'); // Ensure your video element has data-video-id
         let userId = window.tlms_at_vars.tlms_at_user_id; // Ensure this global variable is set in your theme or via WordPress AJAX
         let lessonTitle =video.getAttribute('lesson-title');
+        let courseContentId = video.getAttribute('data-course-content-id');
+
+        
 
         $(video).on('play', function() {
             playStartTime = new Date().getTime();
@@ -45,6 +48,7 @@
                     nonce: tlms_at_vars.tlms_at_nonce,
                     video_id: videoId,
                     course_id: course_id,
+                    course_content_id: courseContentId,
                     total_watch_time: totalPlayTime,  // Send total watch time
                     lesson_title: lessonTitle,
                     user_id: userId

@@ -122,6 +122,7 @@ $sql = "CREATE TABLE $table_name (
     id BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
     course_id VARCHAR(255) NOT NULL,
     video_id VARCHAR(255) NOT NULL,
+    course_content_id VARCHAR(255) NOT NULL,
     lesson_title VARCHAR(255) NOT NULL,
     user_id BIGINT(20) UNSIGNED NOT NULL,
     date DATE NOT NULL,

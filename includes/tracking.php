@@ -44,16 +44,7 @@ class Tracking {
         $user_id = isset($_POST['user_id']) ? intval($_POST['user_id']) : 0;
         $course_id = isset($_POST['course_id']) ? sanitize_text_field($_POST['course_id']) : '';
         $lesson_title = isset($_POST['lesson_title']) ? sanitize_text_field($_POST['lesson_title']) : '';
-
-        // ray('lesson_title', $lesson_title);
-
-        // ray('video_id', $video_id);
-
-        // ray('total_watch_time', $total_watch_time);
-
-        // ray('user_id', $user_id);
-
-        // ray('course_id', $course_id);
+        $course_content_id = isset($_POST['course_content_id']) ? intval($_POST['course_content_id']) : 0;
 
         if ($video_id && $user_id) {
             // Generate current date and time
@@ -74,9 +65,9 @@ class Tracking {
                 $wpdb->update(
                     $table_name,
                     array('total_watch_time' => $new_total_watch_time, 'time' => $time),
-                    array('video_id' => $video_id, 'user_id' => $user_id, 'date' => $date, 'course_id' => $course_id, 'lesson_title' => $lesson_title),
+                    array('video_id' => $video_id, 'user_id' => $user_id, 'date' => $date, 'course_id' => $course_id, 'course_content_id' => $course_content_id ,'lesson_title' => $lesson_title),
                     array('%f', '%s'),
-                    array('%s', '%d', '%s', '%s', '%s')
+                    array('%s', '%d', '%s', '%s', '%d', '%s')
                 );
             } else {
                 // Insert new record
@@ -85,6 +76,7 @@ class Tracking {
                     array(
                         'course_id' => $course_id, 
                         'video_id' => $video_id,
+                        'course_content_id' => $course_content_id,
                         'lesson_title' => $lesson_title,
                         'user_id' => $user_id,
                         'date' => $date,
@@ -95,6 +87,7 @@ class Tracking {
 
                         '%s',
                         '%s',
+                        '%d',
                         '%s',
                         '%d',
                         '%s',

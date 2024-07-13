@@ -60,13 +60,6 @@ function fetch_video_progress_by_parameters($period = 'today', $start_date = '',
     // Execute the query and get results
     $results = $wpdb->get_results($query);
 
-    // ray('results', $results);
-
-    // foreach ($results as $row) {
-    //     $title = $row->lesson_title;
-    //     ray('title', $title);
-    // }
-
     return $results;
 }
 
@@ -430,7 +423,7 @@ $data_in_period = fetch_video_progress_by_parameters($period, $start_date, $end_
                                                 <?php endif; ?>
                                             </div>
 
-                                            <!-- Below markup shows total duration for each videos id=working_in_progress -->
+                                            <!-- Below markup shows total duration for each videos-->
                                             <div class="tutor-col-md-3">
 
                                                 <div class="list-item-title tutor-fs-6 tutor-color-black tutor-py-12">
@@ -444,7 +437,14 @@ $data_in_period = fetch_video_progress_by_parameters($period, $start_date, $end_
                                                                     <?php if($lesson->ID == $row->course_content_id): ?>
                                                                         <div class="list-item-checklist">
                                                                             <div class="tutor-form-check">
-                                                                                <?php esc_html_e($row->total_watch_time); ?>
+                                                                                <?php 
+                                                                                    $watch_time = $row->total_watch_time;
+                                                                                    $hours = floor($watch_time / 3600);
+                                                                                    $minutes = floor(($watch_time / 60) % 60);
+                                                                                    $seconds = $watch_time % 60;
+                                                                                    esc_html_e($hours . 'h ' . $minutes . 'm ' . $seconds . 's');
+                                                                                
+                                                                                ?>
                                                                             </div>
                                                                         </div>
                                                                     <?php endif; ?>

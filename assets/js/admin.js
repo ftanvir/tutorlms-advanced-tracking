@@ -1,59 +1,51 @@
 ;
 (function($) {
 
-    if ($('#video-watch-time-chart').length) {
-        alert
-        var ctx = $('#video-watch-time-chart')[0].getContext('2d');
+    const dates = <?php echo json_encode($dates); ?>;
+    const durations = <?php echo json_encode($durations); ?>;
 
-        $.ajax({
-            url: tlms_at_vars.tlms_at_ajax_url,
-            type: 'POST',
-            data: {
-                action: 'tlms_at_get_video_watch_time_data',
-                nonce: tlms_at_vars.tlms_at_nonce
-            },
-            success: function(response) {
-                if (response.success) {
-                    var data = response.data;
+    function renderChart(dates, durations) {
+        const ctx = document.getElementById('courseDurationChart').getContext('2d');
 
-                    new Chart(ctx, {
-                        type: 'bar',
-                        data: {
-                            labels: data.labels,
-                            datasets: [{
-                                label: 'Total Watch Time (hours)',
-                                data: data.values,
-                                backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                                borderColor: 'rgba(75, 192, 192, 1)',
-                                borderWidth: 1
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            scales: {
-                                x: {
-                                    beginAtZero: true
-                                },
-                                y: {
-                                    beginAtZero: true,
-                                    ticks: {
-                                        callback: function(value) {
-                                            return value + ' hours';
-                                        }
-                                    }
-                                }
-                            }
+        const chartData = {
+            labels: dates,
+            datasets: [{
+                label: 'Total Duration (minutes)',
+                data: durations,
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                borderColor: 'rgba(75, 192, 192, 1)',
+                borderWidth: 1
+            }]
+        };
+
+        if (window.courseDurationChart) {
+            window.courseDurationChart.destroy();
+        }
+
+        window.courseDurationChart = new Chart(ctx, {
+            type: 'bar',
+            data: chartData,
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Total Duration (minutes)'
                         }
-                    });
-                } else {
-                    console.error('Failed to fetch data: ', response.data);
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Date'
+                        }
+                    }
                 }
-            },
-            error: function() {
-                console.error('AJAX request failed.');
             }
         });
     }
+
+    renderChart(dates, durations);
 
 
 })(jQuery);

@@ -73,6 +73,17 @@ $end_date = isset($_GET['end_date']) ? sanitize_text_field($_GET['end_date']) : 
 // Fetch data based on the parameters
 $data_in_period = fetch_video_progress_by_parameters($period, $start_date, $end_date);
 
+
+
+
+// Prepare the data for Chart.js
+$dates = [];
+$durations = [];
+
+foreach ($data_in_period as $item) {
+    $dates[] = $item->date;
+    $durations[] = $item->total_watch_time;
+}
 ?>
 
 <div id="tutor-report-student-details" class="tutor-report-common">
@@ -277,6 +288,60 @@ $data_in_period = fetch_video_progress_by_parameters($period, $start_date, $end_
             </div>
         </div>
     </form>
+
+
+    <canvas id="courseDurationChart" width="400" height="200"></canvas>
+
+
+    <script>
+        jQuery(document).ready(function($) {
+            const dates = <?php echo json_encode($dates); ?>;
+            const durations = <?php echo json_encode($durations); ?>;
+
+            function renderChart(dates, durations) {
+                const ctx = document.getElementById('courseDurationChart').getContext('2d');
+
+                const chartData = {
+                    labels: dates,
+                    datasets: [{
+                        label: 'Total Duration (minutes)',
+                        data: durations,
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 1
+                    }]
+                };
+
+                if (window.courseDurationChart) {
+                    window.courseDurationChart.destroy();
+                }
+
+                window.courseDurationChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: chartData,
+                    options: {
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Total Duration (minutes)'
+                                }
+                            },
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: 'Date'
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            renderChart(dates, durations);
+        });
+    </script>
 
     <div id="tutor-course-details-list" class="tutor-mb-48">
         <div class="tutor-fs-5 tutor-fw-medium tutor-color-black tutor-mb-24">

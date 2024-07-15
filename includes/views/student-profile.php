@@ -50,6 +50,14 @@ function fetch_video_progress_by_parameters($period = 'today', $start_date = '',
                 $start_date = wp_date('Y-m-d', strtotime('-30 days'));
                 $date_query = $wpdb->prepare("date BETWEEN %s AND %s", $start_date, $today);
                 break;
+            case 'last90days':
+                $start_date = wp_date('Y-m-d', strtotime('-90 days'));
+                $date_query = $wpdb->prepare("date BETWEEN %s AND %s", $start_date, $today);
+                break;
+            case 'last365days':
+                $start_date = wp_date('Y-m-d', strtotime('-365 days'));
+                $date_query = $wpdb->prepare("date BETWEEN %s AND %s", $start_date, $today);
+                break;
             default:
                 // Default to 'today' if the period is invalid or not specified
                 $date_query = $wpdb->prepare("date = %s", $today);
@@ -58,7 +66,7 @@ function fetch_video_progress_by_parameters($period = 'today', $start_date = '',
     }
 
     // Prepare the query
-    $query = "SELECT * FROM $table_name WHERE $date_query";
+    $query = "SELECT course_id,course_content_id, SUM(total_watch_time) AS total_watch_time FROM $table_name WHERE $date_query GROUP BY course_content_id";
     // Execute the query and get results
     $results = $wpdb->get_results($query);
 
@@ -72,9 +80,6 @@ $end_date = isset($_GET['end_date']) ? sanitize_text_field($_GET['end_date']) : 
 
 // Fetch data based on the parameters
 $data_in_period = fetch_video_progress_by_parameters($period, $start_date, $end_date);
-
-
-
 
 // Prepare the data for Chart.js
 $dates = [];

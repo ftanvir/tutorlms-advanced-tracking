@@ -42,7 +42,7 @@ class Assets {
     public function admin_enqueue() {
         //wp_enqueue_style( 'tlms_at_assets_admin', TLMS_AT_PLUGIN_URL . 'assets/css/admin.css', null, TLMS_AT_VERSION );
         wp_enqueue_script('jquery');
-        wp_enqueue_script('chart-js', 'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.min.js', array(), null, false );
+        wp_enqueue_script('chart-js', TLMS_AT_PLUGIN_URL. 'assets/js/chart-min.js', array(), null, false );
 
         wp_enqueue_script( 'tlms_at_assets_admin' , TLMS_AT_PLUGIN_URL . 'assets/js/admin.js',  array( 'jquery' ), TLMS_AT_VERSION, true );  // Admin JS for Chart.js
     }

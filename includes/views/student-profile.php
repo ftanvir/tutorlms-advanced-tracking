@@ -630,40 +630,40 @@ $chart_data_to_json = json_encode($chart_data);
 <?php endif; ?>
 </div>
 
+<!-- Chart Markup -->
 
+<canvas id="line-chart" style="height: 370px; width: 100%;"></canvas>
+<script>
+    var chartData = <?php echo $chart_data_to_json; ?>;
 
+    var labels = chartData.map(item => item.period);
+    var durations = chartData.map(item => parseFloat(item.duration));
 
-    <div id="chartContainer" style="height: 370px; width: 100%;"></div>
-    <script>
-        var dataPoints = <?php echo $chart_data_to_json; ?>;
-
-        dataPoints = dataPoints.map(function (data) {
-            return {
-                x: new Date(data.period),
-                y: data.duration
-            };
-        });
-        var chart = new CanvasJS.Chart("chartContainer", {
-            animationEnabled: true,
-            title:{
-                text: "Total Duration"
-            },
-            axisX:{
-                valueFormatString: "DD MMM"
-            },
-            axisY: {
-                title: "Number of hours",
-
-            },
-            data: [{
-                type: "line",
-                xValueFormatString: "DD MMM",
-                color: "#F08080",
-                dataPoints: dataPoints
-            }]
-        });
-        chart.render();
-    </script>
+    var ctx = document.getElementById('line-chart').getContext('2d');
+    var lineChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'Total Duration',
+                    data: durations,
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    fill: true
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+</script>
 
 <div id="tutor-report-reviews">
     <div class="tutor-fs-5 tutor-fw-medium tutor-color-black tutor-mb-24">

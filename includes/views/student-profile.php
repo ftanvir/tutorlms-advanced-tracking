@@ -12,6 +12,97 @@ if (!defined('ABSPATH')) {
 
 
 
+function get_chart_data($period = 'today', $start_date = '', $end_date = '') {
+    global $wpdb;
+
+    // Table name
+    $table_name = $wpdb->prefix . 'tlms_at_video_progress';
+
+    // Get today's date in Y-m-d format based on WordPress timezone
+    $today = wp_date('Y-m-d');
+    $date_query = '';
+
+    if ($start_date && $end_date) {
+        // If both start_date and end_date are provided, use these dates
+        $start_date = sanitize_text_field($start_date);
+        $end_date = sanitize_text_field($end_date);
+
+        $start_date = date('Y-m-d', strtotime($start_date));
+        $end_date = date('Y-m-d', strtotime($end_date));
+
+        // Ensure dates are in valid format
+        if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $start_date) || !preg_match('/^\d{4}-\d{2}-\d{2}$/', $end_date)) {
+            return new WP_Error('invalid_date_format', 'Date format should be YYYY-MM-DD');
+        }
+
+        $date_query = $wpdb->prepare("date BETWEEN %s AND %s", $start_date, $end_date);
+    } else {
+        // Determine the date range based on the period
+        switch ($period) {
+            case 'today':
+                $date_query = $wpdb->prepare("date = %s", $today);
+                break;
+            case 'last7days':
+                $start_date = wp_date('Y-m-d', strtotime('-7 days'));
+                $date_query = $wpdb->prepare("date BETWEEN %s AND %s", $start_date, $today);
+                break;
+            case 'last30days':
+                $start_date = wp_date('Y-m-d', strtotime('-30 days'));
+                $date_query = $wpdb->prepare("date BETWEEN %s AND %s", $start_date, $today);
+                break;
+            case 'last90days':
+                $start_date = wp_date('Y-m-d', strtotime('-90 days'));
+                $date_query = $wpdb->prepare("date BETWEEN %s AND %s", $start_date, $today);
+                break;
+            case 'last365days':
+                $start_date = wp_date('Y-m-d', strtotime('-365 days'));
+                $date_query = $wpdb->prepare("date BETWEEN %s AND %s", $start_date, $today);
+                break;
+            default:
+                // Default to 'today' if the period is invalid or not specified
+                $date_query = $wpdb->prepare("date = %s", $today);
+                break;
+        }
+    }
+
+    $total_days= NULL;
+    if ($start_date && $end_date) {
+        $total_days = abs(strtotime($end_date) - strtotime($start_date)) / (60 * 60 * 24);
+    }
+
+    $query_condition = '';
+    if($period == 'today' || $period == 'last7days' || $period == 'last30days' || (isset($total_days) && $total_days<=31)) {
+        $query_condition = 'days';
+    } 
+    else if($period == 'last90days' || $period = 'last365days' || (isset($total_days) && $total_days>31 && $total_days<=365)) {
+        $query_condition = 'months';
+    }
+
+    // Prepare the query based on the period
+    switch ($query_condition) {
+
+        case 'days':
+            $query = "SELECT DATE(date) as period, SUM(total_watch_time)/3600 as duration 
+                      FROM $table_name WHERE $date_query GROUP BY DATE(date)";
+            break;
+        case 'months':
+            $query = "SELECT DATE_FORMAT(date, '%Y-%m') as period, SUM(total_watch_time)/3600 as duration 
+                      FROM $table_name WHERE $date_query GROUP BY DATE_FORMAT(date, '%Y-%m')";
+            break;
+        default:
+            $query = "SELECT YEAR(date) as period, SUM(total_watch_time)/3600 as duration 
+                      FROM $table_name WHERE $date_query GROUP BY YEAR(date)";
+            break;
+    }
+
+    // Execute the query and get results
+    $results = $wpdb->get_results($query);
+
+    return $results;
+}
+
+
+
 function fetch_video_progress_by_parameters($period = 'today', $start_date = '', $end_date = '') {
     global $wpdb;
 
@@ -66,7 +157,7 @@ function fetch_video_progress_by_parameters($period = 'today', $start_date = '',
     }
 
     // Prepare the query
-    $query = "SELECT course_id,course_content_id, SUM(total_watch_time) AS total_watch_time FROM $table_name WHERE $date_query GROUP BY course_content_id";
+    $query = "SELECT course_id,course_content_id,date, SUM(total_watch_time) AS total_watch_time FROM $table_name WHERE $date_query GROUP BY course_content_id";
     // Execute the query and get results
     $results = $wpdb->get_results($query);
 
@@ -81,14 +172,8 @@ $end_date = isset($_GET['end_date']) ? sanitize_text_field($_GET['end_date']) : 
 // Fetch data based on the parameters
 $data_in_period = fetch_video_progress_by_parameters($period, $start_date, $end_date);
 
-// Prepare the data for Chart.js
-$dates = [];
-$durations = [];
 
-foreach ($data_in_period as $item) {
-    $dates[] = $item->date;
-    $durations[] = $item->total_watch_time;
-}
+$chart_data = get_chart_data($period, $start_date, $end_date);
 ?>
 
 <div id="tutor-report-student-details" class="tutor-report-common">

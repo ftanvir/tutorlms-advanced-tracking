@@ -177,7 +177,6 @@ $chart_data = get_chart_data($period, $start_date, $end_date);
 
 $chart_data_to_json = json_encode($chart_data);
 
-ray('json', $chart_data_to_json);
 ?>
 
 <div id="tutor-report-student-details" class="tutor-report-common">
@@ -496,7 +495,7 @@ ray('json', $chart_data_to_json);
                                             </div>
 
 
-
+                                            <!-- counting lessonview -->
                                             <div class="tutor-col-md-3">
                                                 <div class="list-item-title tutor-fs-6 tutor-color-black tutor-py-12">
                                                     <?php esc_html_e('View', 'tutor-pro'); ?>
@@ -513,7 +512,7 @@ ray('json', $chart_data_to_json);
                                             </div>
 
 
-
+                                            <!-- counting FileDownloads -->
                                             <div class="tutor-col-md-3">
                                                 <div class="list-item-title tutor-fs-6 tutor-color-black tutor-py-12">
                                                     <?php esc_html_e('Download', 'tutor-pro'); ?>
@@ -637,7 +636,6 @@ ray('json', $chart_data_to_json);
     <div id="chartContainer" style="height: 370px; width: 100%;"></div>
     <script>
         var dataPoints = <?php echo $chart_data_to_json; ?>;
-        console.log(dataPoints);
 
         dataPoints = dataPoints.map(function (data) {
             return {
@@ -645,7 +643,6 @@ ray('json', $chart_data_to_json);
                 y: data.duration
             };
         });
-        console.log(dataPoints);
         var chart = new CanvasJS.Chart("chartContainer", {
             animationEnabled: true,
             title:{

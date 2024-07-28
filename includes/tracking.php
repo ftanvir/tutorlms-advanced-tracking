@@ -57,7 +57,7 @@ class Tracking {
             $existing = $wpdb->get_row($wpdb->prepare(
                 "SELECT * FROM $table_name WHERE video_id = %s AND user_id = %d AND date = %s",
                 $video_id, $user_id, $date
-        ));
+            ));
 
             if ($existing) {
                 // Update existing record

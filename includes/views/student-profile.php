@@ -70,7 +70,11 @@ function get_chart_data($period = 'today', $start_date = '', $end_date = '') {
         $total_days = abs(strtotime($end_date) - strtotime($start_date)) / (60 * 60 * 24);
     }
     $query_condition = '';
-    if( $period == 'last7days' || $period == 'last30days' || (isset($total_days) && $total_days<=31)) {
+
+    if($period == 'today') {
+        $query_condition = 'hours';
+    }
+    else if( $period == 'last7days' || $period == 'last30days' || (isset($total_days) && $total_days<=31)) {
         $query_condition = 'days';
     } 
     else if($period == 'last90days' || $period = 'last365days' || (isset($total_days) && $total_days>31 && $total_days<=365)) {
@@ -79,7 +83,11 @@ function get_chart_data($period = 'today', $start_date = '', $end_date = '') {
 
     // Prepare the query based on the period
     switch ($query_condition) {
-        
+
+        case 'hours':
+            $query = "SELECT TIME_FORMAT(time, '%H') as period, SUM(total_watch_time)/60 as duration 
+                      FROM $table_name WHERE $date_query GROUP BY TIME_FORMAT(time, '%H')";
+            break;
         case 'days':
             $query = "SELECT DATE(date) as period, SUM(total_watch_time)/60 as duration 
                       FROM $table_name WHERE $date_query GROUP BY DATE(date)";

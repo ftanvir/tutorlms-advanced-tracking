@@ -26,6 +26,7 @@ class Assets {
 
         wp_enqueue_script( 'video-js-js', 'https://vjs.zencdn.net/7.20.2/video.min.js', array(), '7.20.2', true ); // Video.js JS from CDN
         wp_enqueue_script( 'tlms_at_assets_frontend', TLMS_AT_PLUGIN_URL . 'assets/js/front-end.js', array( 'jquery', 'video-js-js' ), TLMS_AT_VERSION, true );
+        wp_enqueue_script('tlms_at_assets_attachment_download', TLMS_AT_PLUGIN_URL . 'assets/js/attachment-download.js', array('jquery'), TLMS_AT_VERSION, true); // Attachment download tracking
 
 
         // Localize script for AJAX requests

@@ -18,6 +18,8 @@ class Tracking {
         add_action('wp_ajax_tlms_at_track_video', array($this, 'track_video'));
         add_action('wp_ajax_nopriv_tlms_at_track_video', array($this, 'track_video'));
 
+        add_filter( "tutor-attachments-template-change", array( $this, "attachments_template_change" ), 10, 1 );
+
     }
 
 
@@ -102,6 +104,10 @@ class Tracking {
     }
 
 
+    public function attachments_template_change( $template ) {
+        print_r($template);
+        die();
+    }
 
     
 }

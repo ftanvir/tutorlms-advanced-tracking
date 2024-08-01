@@ -10,97 +10,120 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-
-
 function get_chart_data($period = 'today', $start_date = '', $end_date = '') {
     global $wpdb;
 
-    // Table name
     $table_name = $wpdb->prefix . 'tlms_at_video_progress';
-
-    // Get today's date in Y-m-d format based on WordPress timezone
     $today = wp_date('Y-m-d');
-    $date_query = '';
 
     if ($start_date && $end_date) {
-        // If both start_date and end_date are provided, use these dates
         $start_date = sanitize_text_field($start_date);
         $end_date = sanitize_text_field($end_date);
 
-        $start_date = date('Y-m-d', strtotime($start_date));
-        $end_date = date('Y-m-d', strtotime($end_date));
-
-        // Ensure dates are in valid format
         if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $start_date) || !preg_match('/^\d{4}-\d{2}-\d{2}$/', $end_date)) {
             return new WP_Error('invalid_date_format', 'Date format should be YYYY-MM-DD');
         }
-
-        $date_query = $wpdb->prepare("date BETWEEN %s AND %s", $start_date, $end_date);
     } else {
-        // Determine the date range based on the period
         switch ($period) {
             case 'today':
-                $date_query = $wpdb->prepare("date = %s", $today);
+                $start_date = $end_date = $today;
                 break;
             case 'last7days':
                 $start_date = wp_date('Y-m-d', strtotime('-7 days'));
-                $date_query = $wpdb->prepare("date BETWEEN %s AND %s", $start_date, $today);
+                $end_date = $today;
                 break;
             case 'last30days':
                 $start_date = wp_date('Y-m-d', strtotime('-30 days'));
-                $date_query = $wpdb->prepare("date BETWEEN %s AND %s", $start_date, $today);
+                $end_date = $today;
                 break;
             case 'last90days':
                 $start_date = wp_date('Y-m-d', strtotime('-90 days'));
-                $date_query = $wpdb->prepare("date BETWEEN %s AND %s", $start_date, $today);
+                $end_date = $today;
                 break;
             case 'last365days':
                 $start_date = wp_date('Y-m-d', strtotime('-365 days'));
-                $date_query = $wpdb->prepare("date BETWEEN %s AND %s", $start_date, $today);
+                $end_date = $today;
                 break;
             default:
-                // Default to 'today' if the period is invalid or not specified
-                $date_query = $wpdb->prepare("date = %s", $today);
+                $start_date = $end_date = $today;
                 break;
         }
     }
 
-    $total_days= NULL;
-    if ($start_date && $end_date) {
-        $total_days = abs(strtotime($end_date) - strtotime($start_date)) / (60 * 60 * 24);
-    }
-
     $query_condition = '';
-    if($period == 'today' || $period == 'last7days' || $period == 'last30days' || (isset($total_days) && $total_days<=31)) {
+    if ($start_date === $end_date) {
+        $query_condition = 'hours';
+    } elseif (strtotime($end_date) - strtotime($start_date) <= 31 * 24 * 60 * 60) {
         $query_condition = 'days';
-    } 
-    else if($period == 'last90days' || $period = 'last365days' || (isset($total_days) && $total_days>31 && $total_days<=365)) {
+    } elseif (strtotime($end_date) - strtotime($start_date) <= 365 * 24 * 60 * 60) {
         $query_condition = 'months';
+    } else {
+        $query_condition = 'years';
     }
 
-    // Prepare the query based on the period
     switch ($query_condition) {
-
+        case 'hours':
+            $query = "SELECT DATE_FORMAT(date, '%H:00') as period, SUM(total_watch_time)/60 as duration 
+                      FROM $table_name WHERE date BETWEEN %s AND %s GROUP BY DATE_FORMAT(date, '%H:00')";
+            $query = $wpdb->prepare($query, $start_date . ' 00:00:00', $end_date . ' 23:59:59');
+            break;
         case 'days':
             $query = "SELECT DATE(date) as period, SUM(total_watch_time)/60 as duration 
-                      FROM $table_name WHERE $date_query GROUP BY DATE(date)";
+                      FROM $table_name WHERE date BETWEEN %s AND %s GROUP BY DATE(date)";
+            $query = $wpdb->prepare($query, $start_date, $end_date);
             break;
         case 'months':
             $query = "SELECT DATE_FORMAT(date, '%Y-%m') as period, SUM(total_watch_time)/60 as duration 
-                      FROM $table_name WHERE $date_query GROUP BY DATE_FORMAT(date, '%Y-%m')";
+                      FROM $table_name WHERE date BETWEEN %s AND %s GROUP BY DATE_FORMAT(date, '%Y-%m')";
+            $query = $wpdb->prepare($query, $start_date, $end_date);
             break;
-        default:
-            $query = "SELECT YEAR(date) as period, SUM(total_watch_time)/60 as duration 
-                      FROM $table_name WHERE $date_query GROUP BY YEAR(date)";
+        case 'years':
+            $query = "SELECT DATE_FORMAT(date, '%Y') as period, SUM(total_watch_time)/60 as duration 
+                      FROM $table_name WHERE date BETWEEN %s AND %s GROUP BY DATE_FORMAT(date, '%Y')";
+            $query = $wpdb->prepare($query, $start_date, $end_date);
             break;
     }
 
-    // Execute the query and get results
-    $results = $wpdb->get_results($query);
+    $results = $wpdb->get_results($query, ARRAY_A);
 
-    return $results;
+    $time_range = [];
+    if ($query_condition === 'hours') {
+        for ($i = 0; $i < 24; $i++) {
+            $hour = str_pad($i, 2, '0', STR_PAD_LEFT) . ':00';
+            $time_range[$hour] = 0;
+        }
+    } elseif ($query_condition === 'days') {
+        $current_date = strtotime($start_date);
+        $end_date = strtotime($end_date);
+
+        while ($current_date <= $end_date) {
+            $time_range[wp_date('Y-m-d', $current_date)] = 0;
+            $current_date = strtotime('+1 day', $current_date);
+        }
+    } elseif ($query_condition === 'months') {
+        $current_month = strtotime(wp_date('Y-m-01', strtotime($start_date)));
+        $end_month = strtotime(wp_date('Y-m-t', strtotime($end_date)));
+
+        while ($current_month <= $end_month) {
+            $time_range[wp_date('Y-m', $current_month)] = 0;
+            $current_month = strtotime('+1 month', $current_month);
+        }
+    } else {
+        $current_year = strtotime(wp_date('Y-01-01', strtotime($start_date)));
+        $end_year = strtotime(wp_date('Y-12-31', strtotime($end_date)));
+
+        while ($current_year <= $end_year) {
+            $time_range[wp_date('Y', $current_year)] = 0;
+            $current_year = strtotime('+1 year', $current_year);
+        }
+    }
+
+    foreach ($results as $row) {
+        $time_range[$row['period']] = $row['duration'];
+    }
+
+    return $time_range;
 }
-
 
 
 function fetch_video_progress_by_parameters($period = 'today', $start_date = '', $end_date = '') {
@@ -118,8 +141,8 @@ function fetch_video_progress_by_parameters($period = 'today', $start_date = '',
         $start_date = sanitize_text_field($start_date);
         $end_date = sanitize_text_field($end_date);
 
-        $start_date = date('Y-m-d', strtotime($start_date));
-        $end_date = date('Y-m-d', strtotime($end_date));
+        $start_date = wp_date('Y-m-d', strtotime($start_date));
+        $end_date = wp_date('Y-m-d', strtotime($end_date));
 
         // Ensure dates are in valid format
         if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $start_date) || !preg_match('/^\d{4}-\d{2}-\d{2}$/', $end_date)) {
@@ -633,37 +656,96 @@ $chart_data_to_json = json_encode($chart_data);
 <!-- Chart Markup -->
 
 <canvas id="line-chart" style="height: 370px; width: 100%;"></canvas>
-<script>
-    var chartData = <?php echo $chart_data_to_json; ?>;
+    <script>
+        var chartData = <?php echo json_encode($chart_data); ?>;
+        var labels = Object.keys(chartData);
+        var durations = Object.values(chartData).map(duration => parseFloat(duration));
 
-    var labels = chartData.map(item => item.period);
-    var durations = chartData.map(item => parseFloat(item.duration));
-
-    var ctx = document.getElementById('line-chart').getContext('2d');
-    var lineChart = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: labels,
-            datasets: [
-                {
-                    label: 'Total Duration',
-                    data: durations,
-                    borderColor: 'rgba(75, 192, 192, 1)',
-                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                    fill: true
-                }
-            ]
-        },
-        options: {
-            responsive: true,
-            scales: {
-                y: {
-                    beginAtZero: true
+        var ctx = document.getElementById('line-chart').getContext('2d');
+        var lineChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'Total Duration',
+                        data: durations,
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        fill: true
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    x: {
+                        type: 'time',
+                        time: {
+                            unit: getUnit(labels),
+                            tooltipFormat: getTooltipFormat(labels),
+                            displayFormats: {
+                                hour: 'HH:mm',
+                                day: 'MMM D',
+                                month: 'MMM YYYY',
+                                year: 'YYYY'
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: getTitleText(labels)
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Duration (minutes)'
+                        }
+                    }
                 }
             }
+        });
+
+        function getUnit(labels) {
+            if (labels.length === 24 && labels.every(label => label.includes(':00'))) {
+                return 'hour';
+            } else if (labels.every(label => label.match(/^\d{4}-\d{2}-\d{2}$/))) {
+                return 'day';
+            } else if (labels.every(label => label.match(/^\d{4}-\d{2}$/))) {
+                return 'month';
+            } else {
+                return 'year';
+            }
         }
-    });
-</script>
+
+        function getTooltipFormat(labels) {
+            if (labels.length === 24 && labels.every(label => label.includes(':00'))) {
+                return 'HH:mm';
+            } else if (labels.every(label => label.match(/^\d{4}-\d{2}-\d{2}$/))) {
+                return 'MMM D';
+            } else if (labels.every(label => label.match(/^\d{4}-\d{2}$/))) {
+                return 'MMM YYYY';
+            } else {
+                return 'YYYY';
+            }
+        }
+
+        function getTitleText(labels) {
+            if (labels.length === 24 && labels.every(label => label.includes(':00'))) {
+                return 'Hour';
+            } else if (labels.every(label => label.match(/^\d{4}-\d{2}-\d{2}$/))) {
+                return 'Date';
+            } else if (labels.every(label => label.match(/^\d{4}-\d{2}$/))) {
+                return 'Month';
+            } else {
+                return 'Year';
+            }
+        }
+    </script>
+
+
+
 
 <div id="tutor-report-reviews">
     <div class="tutor-fs-5 tutor-fw-medium tutor-color-black tutor-mb-24">

@@ -117,6 +117,7 @@ function tlms_at_create_table() {
 
 $table_name = $wpdb->prefix . 'tlms_at_video_progress';
 $charset_collate = $wpdb->get_charset_collate();
+$table_name_2 = $wpdb->prefix. 'tlms_at_download_count';
 
 $sql = "CREATE TABLE $table_name (
     id BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -132,11 +133,24 @@ $sql = "CREATE TABLE $table_name (
     UNIQUE KEY video_user_date (video_id, user_id, date)
 ) $charset_collate;";
 
+$sql_2 = "CREATE TABLE $table_name_2 (
+    id BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+    content_id INT(11) NOT NULL,
+    user_id BIGINT(20) UNSIGNED NOT NULL,
+    attachment_id INT(11) NOT NULL,
+    download_date DATE NOT NULL,
+    download_time TIME NOT NULL,
+    PRIMARY KEY (id),
+    UNIQUE KEY content_user_date (content_id, user_id, download_date)
+) $charset_collate;";
+
     require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
     dbDelta($sql);
+    dbDelta($sql_2);
 
     // Clear cache after creating/updating the table
     wp_cache_delete($table_name, 'transient');
+    wp_cache_delete($table_name_2, 'transient');
 }
 
 

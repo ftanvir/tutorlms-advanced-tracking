@@ -18,15 +18,25 @@ class Tracking {
         add_action('wp_ajax_tlms_at_track_video', array($this, 'track_video'));
         add_action('wp_ajax_nopriv_tlms_at_track_video', array($this, 'track_video'));
 
+<<<<<<< HEAD
         add_filter( "tutor-attachments-template-change", array( $this, "attachments_template_change" ), 10, 1 );
+=======
+        add_filter('tutor_global/attachment-view', array($this, 'custom_tutor_attachment_view'), 10, 2);
+>>>>>>> 7de590ff19033d01f6b4cba09d9910df1265bfac
 
     }
-
-
 
     public function custom_tutor_single_lesson_video($content, $video_info, $source_key) {
         ob_start();
         require_once TLMS_AT_PLUGIN_PATH . 'includes/views/html5.php';
+        $content = ob_get_contents();
+        ob_end_clean();
+        return $content;
+    }
+
+    public function custom_tutor_attachment_view($attachment, $open_mode_view) {
+        ob_start();
+        require_once TLMS_AT_PLUGIN_PATH . 'includes/views/attachment-view.php';
         $content = ob_get_contents();
         ob_end_clean();
         return $content;
@@ -59,7 +69,7 @@ class Tracking {
             $existing = $wpdb->get_row($wpdb->prepare(
                 "SELECT * FROM $table_name WHERE video_id = %s AND user_id = %d AND date = %s",
                 $video_id, $user_id, $date
-        ));
+            ));
 
             if ($existing) {
                 // Update existing record

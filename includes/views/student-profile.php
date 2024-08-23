@@ -10,6 +10,11 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
+
+//function get_download_count_data() {
+//
+//}
+
 function get_chart_data($period = 'today', $start_date = '', $end_date = '') {
     global $wpdb;
 
@@ -199,6 +204,20 @@ $data_in_period = fetch_video_progress_by_parameters($period, $start_date, $end_
 $chart_data = get_chart_data($period, $start_date, $end_date);
 
 $chart_data_to_json = json_encode($chart_data);
+
+
+global $wpdb;
+
+$table_name = $wpdb->prefix . 'tlms_at_download_count';
+
+$queryy = "SELECT download_count as total_downloads, course_content_id, course_id FROM $table_name GROUP BY course_content_id";
+$resultss = $wpdb->get_results($queryy, ARRAY_A);
+
+//    $download_count = [];
+//    foreach ($results as $row) {
+//        $download_count[$row['attachment_id']] = $row['total_downloads'];
+//    }
+//ray('resultss', $resultss);
 
 ?>
 
@@ -540,13 +559,26 @@ $chart_data_to_json = json_encode($chart_data);
                                                 <div class="list-item-title tutor-fs-6 tutor-color-black tutor-py-12">
                                                     <?php esc_html_e('Download', 'tutor-pro'); ?>
                                                 </div>
-                                                <?php if (is_array($lessons) && count($lessons)) : ?>
-                                                    <?php foreach ($lessons as $lesson) : ?>
-                                                        <div class="list-item-checklist">
-                                                            <div class="tutor-form-check">
-                                                                0
-                                                            </div>
-                                                        </div>
+
+<!--                                                If download count then show the download count from $resultss-->
+                                                <?php if(is_array($resultss) && !empty($resultss)): ?>
+                                                    <?php foreach($resultss as $row): ?>
+                                                        <?php if($row['course_id'] == $course->ID): ?>
+                                                            <?php foreach($lessons as $lesson): ?>
+                                                                <?php if($lesson->ID == $row['course_content_id']): ?>
+                                                                <?php ray('course_id', $lesson->ID);
+                                                                      ray('lessons', $lesson);
+                                                                      ray('course_content_id', $row['course_content_id']);
+                                                                ?>
+
+                                                                    <div class="list-item-checklist">
+                                                                        <div class="tutor-form-check">
+                                                                            <?php esc_html_e($row['total_downloads']); ?>
+                                                                        </div>
+                                                                    </div>
+                                                                <?php endif; ?>
+                                                            <?php endforeach; ?>
+                                                        <?php endif; ?>
                                                     <?php endforeach; ?>
                                                 <?php endif; ?>
                                             </div>
@@ -558,6 +590,7 @@ $chart_data_to_json = json_encode($chart_data);
                                                     <?php esc_html_e('Duration', 'tutor-pro'); ?>
                                                 </div>
                                                 <!-- Show duration for each courses lesson's -->
+<!--                                                just testing purpose-->
                                                 <?php if(empty($data_in_period)): ?>
                                                     <?php foreach($lessons as $lesson): ?>
                                                         <div class="list-item-checklist">

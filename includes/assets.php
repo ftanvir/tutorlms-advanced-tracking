@@ -35,6 +35,13 @@ class Assets {
             'tlms_at_nonce'    => wp_create_nonce( 'tlms_at_track_nonce' ),
             'tlms_at_user_id'  => get_current_user_id(), // Assuming you want to pass the current user ID
         ) );
+
+		wp_localize_script( 'tlms_at_assets_attachment_download', 'tlms_at_vars1', array(
+			'tlms_at_ajax_url' => admin_url( 'admin-ajax.php' ),
+			'tlms_at_nonce'    => wp_create_nonce( 'tlms_at_attachment_nonce' ),
+			'tlms_at_user_id'  => get_current_user_id() // Assuming you want to pass the current
+		) );
+
     }
 
     /**

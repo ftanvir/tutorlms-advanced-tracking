@@ -115,42 +115,43 @@ register_activation_hook(__FILE__, 'tlms_at_create_table');
 function tlms_at_create_table() {
     global $wpdb;
 
-$table_name = $wpdb->prefix . 'tlms_at_video_progress';
-$charset_collate = $wpdb->get_charset_collate();
-$table_name_2 = $wpdb->prefix. 'tlms_at_download_count';
+	$table_name = $wpdb->prefix . 'tlms_at_video_progress';
+	$charset_collate = $wpdb->get_charset_collate();
+	$table_name_2 = $wpdb->prefix. 'tlms_at_download_count';
 
-$sql = "CREATE TABLE $table_name (
-    id BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
-    course_id VARCHAR(255) NOT NULL,
-    video_id VARCHAR(255) NOT NULL,
-    course_content_id VARCHAR(255) NOT NULL,
-    lesson_title VARCHAR(255) NOT NULL,
-    user_id BIGINT(20) UNSIGNED NOT NULL,
-    date DATE NOT NULL,
-    time TIME NOT NULL,  
-    total_watch_time FLOAT NOT NULL,  
-    PRIMARY KEY (id),
-    UNIQUE KEY video_user_date (video_id, user_id, date)
-) $charset_collate;";
+	$sql = "CREATE TABLE $table_name (
+	    id BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+	    course_id VARCHAR(255) NOT NULL,
+	    video_id VARCHAR(255) NOT NULL,
+	    course_content_id VARCHAR(255) NOT NULL,
+	    lesson_title VARCHAR(255) NOT NULL,
+	    user_id BIGINT(20) UNSIGNED NOT NULL,
+	    date DATE NOT NULL,
+	    time TIME NOT NULL,  
+	    total_watch_time FLOAT NOT NULL,  
+	    PRIMARY KEY (id),
+	    UNIQUE KEY video_user_date (video_id, user_id, date)
+	) $charset_collate;";
 
-$sql_2 = "CREATE TABLE $table_name_2 (
-    id BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
-    content_id INT(11) NOT NULL,
-    user_id BIGINT(20) UNSIGNED NOT NULL,
-    attachment_id INT(11) NOT NULL,
-    download_date DATE NOT NULL,
-    download_time TIME NOT NULL,
-    PRIMARY KEY (id),
-    UNIQUE KEY content_user_date (content_id, user_id, download_date)
-) $charset_collate;";
+	$sql_2 = "CREATE TABLE $table_name_2 (
+	    id BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+	    course_id VARCHAR(255) NOT NULL,
+	    course_content_id VARCHAR(255) NOT NULL,
+	    user_id BIGINT(20) UNSIGNED NOT NULL,
+	    attachment_id BIGINT(20) UNSIGNED NOT NULL,
+	    date DATE NOT NULL,
+	    download_count INT NOT NULL,
+	    PRIMARY KEY (id),
+	    UNIQUE KEY course_content_user (course_content_id, user_id, course_id)
+	) $charset_collate;";
 
-    require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
-    dbDelta($sql);
-    dbDelta($sql_2);
+	    require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+	    dbDelta($sql);
+	    dbDelta($sql_2);
 
-    // Clear cache after creating/updating the table
-    wp_cache_delete($table_name, 'transient');
-    wp_cache_delete($table_name_2, 'transient');
+	    // Clear cache after creating/updating the table
+	    wp_cache_delete($table_name, 'transient');
+	    wp_cache_delete($table_name_2, 'transient');
 }
 
 

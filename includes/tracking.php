@@ -129,68 +129,65 @@ class Tracking {
 	public function track_attachment_download() {
 
 		//security check
-//		check_ajax_referer('tlms_at_attachment_nonce', 'nonce');
-//
-//		$attachment_id = isset($_POST['attachment_id']) ? intval($_POST['attachment_id']) : 0;
-//		$course_id = isset($_POST['course_id']) ? intval($_POST['course_id']) : 0;
-//		$course_content_id = isset($_POST['course_content_id']) ? intval($_POST['course_content_id']) : 0;
-//		$user_id = isset($_POST['user_id']) ? intval($_POST['user_id']) : 0;
-//
-//		global $wpdb;
-//		$table_name = $wpdb->prefix . 'tlms_at_download_count';
-//
-//		$existing = $wpdb->get_row($wpdb->prepare(
-//			"SELECT * FROM $table_name WHERE attachment_id = %d AND user_id = %d",
-//			$attachment_id, $user_id
-//		));
-//
-//		if ($existing) {
-//			// Increment download count
-//			$updated = $wpdb->update(
-//				$table_name,
-//				array('download_count' => $existing->download_count + 1),
-//				array(
-//					'attachment_id' => $attachment_id,
-//					'user_id' => $user_id
-//				),
-//				array('%d'),
-//				array('%d', '%d')
-//			);
-//
-//			if ($updated === false) {
-//				// Handle error here
-//				// You can log the error or show an error message
-//			}
-//
-//		} else {
-//			$inserted = $wpdb->insert(
-//				$table_name,
-//				array(
-//					'course_id' => $course_id,
-//					'course_content_id' => $course_content_id,
-//					'user_id' => $user_id,
-//					'attachment_id' => $attachment_id,
-//					'download_count' => 1
-//				),
-//				array(
-//					'%d',
-//					'%d',
-//					'%d',
-//					'%d',
-//					'%d'
-//				)
-//			);
-//		}
-//
-//
-//		wp_send_json_success();
+		check_ajax_referer('tlms_at_attachment_nonce', 'nonce');
+
+		$attachment_id = isset($_POST['attachment_id']) ? intval($_POST['attachment_id']) : 0;
+		$course_id = isset($_POST['course_id']) ? intval($_POST['course_id']) : 0;
+		$course_content_id = isset($_POST['course_content_id']) ? intval($_POST['course_content_id']) : 0;
+		$user_id = isset($_POST['user_id']) ? intval($_POST['user_id']) : 0;
+		$date = date( 'Y-m-d' );
+
+		global $wpdb;
+		$table_name = $wpdb->prefix . 'tlms_at_download_count';
+
+		$existing = $wpdb->get_row($wpdb->prepare(
+			"SELECT * FROM $table_name WHERE attachment_id = %d AND user_id = %d AND date = %s",
+			$attachment_id, $user_id, $date
+		));
+
+		if ($existing) {
+			// Increment download count
+			$updated = $wpdb->update(
+				$table_name,
+				array('download_count' => $existing->download_count + 1),
+				array(
+					'attachment_id' => $attachment_id,
+					'user_id' => $user_id
+				),
+				array('%d'),
+				array('%d', '%d')
+			);
+
+		} else {
+			$inserted = $wpdb->insert(
+				$table_name,
+				array(
+					'course_id'         => $course_id,
+					'course_content_id' => $course_content_id,
+					'user_id'           => $user_id,
+					'attachment_id'     => $attachment_id,
+					'date'              => $date,
+					'download_count'    => 1
+				),
+				array(
+					'%d',
+					'%d',
+					'%d',
+					'%d',
+					'%s',
+					'%d'
+				)
+			);
+		}
+
+		wp_send_json_success();
 	}
 
 
-//	public function attachments_template_change( $template ) {
-//		print_r( $template );
-//		die();
-//	}
+	public function attachments_template_change( $template ) {
+		print_r( $template );
+		die();
+	}
 
 
 }

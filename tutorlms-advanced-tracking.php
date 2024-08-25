@@ -144,7 +144,6 @@ function tlms_at_create_table() {
 	    PRIMARY KEY (id),
 	    UNIQUE KEY course_content_user (course_content_id, user_id, course_id)
 	) $charset_collate;";
-
 	    require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
 	    dbDelta($sql);
 	    dbDelta($sql_2);

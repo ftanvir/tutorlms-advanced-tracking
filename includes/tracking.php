@@ -127,67 +127,41 @@ class Tracking {
 	 * Track attachment download
 	 */
 	public function track_attachment_download() {
-
-		//security check
+		// Security check
 		check_ajax_referer('tlms_at_attachment_nonce', 'nonce');
 
+		// Get and sanitize input data
 		$attachment_id = isset($_POST['attachment_id']) ? intval($_POST['attachment_id']) : 0;
 		$course_id = isset($_POST['course_id']) ? intval($_POST['course_id']) : 0;
 		$course_content_id = isset($_POST['course_content_id']) ? intval($_POST['course_content_id']) : 0;
 		$user_id = isset($_POST['user_id']) ? intval($_POST['user_id']) : 0;
-		$date = date( 'Y-m-d' );
+		$date = wp_date('Y-m-d');
 
+		// Access the database
 		global $wpdb;
 		$table_name = $wpdb->prefix . 'tlms_at_download_count';
 
-		$existing = $wpdb->get_row($wpdb->prepare(
-			"SELECT * FROM $table_name WHERE attachment_id = %d AND user_id = %d AND date = %s",
-			$attachment_id, $user_id, $date
-		));
+		// Insert or update the record
+		$query = $wpdb->prepare(
+			"INSERT INTO $table_name (course_id, course_content_id, user_id, attachment_id, date, download_count) 
+         VALUES (%d, %d, %d, %d, %s, 1)
+         ON DUPLICATE KEY UPDATE download_count = download_count + 1",
+			$course_id, $course_content_id, $user_id, $attachment_id, $date
+		);
+		// Execute the query
+		$result = $wpdb->query($query);
 
-		if ($existing) {
-			// Increment download count
-			$updated = $wpdb->update(
-				$table_name,
-				array('download_count' => $existing->download_count + 1),
-				array(
-					'attachment_id' => $attachment_id,
-					'user_id' => $user_id
-				),
-				array('%d'),
-				array('%d', '%d')
-			);
-
-		} else {
-			$inserted = $wpdb->insert(
-				$table_name,
-				array(
-					'course_id'         => $course_id,
-					'course_content_id' => $course_content_id,
-					'user_id'           => $user_id,
-					'attachment_id'     => $attachment_id,
-					'date'              => $date,
-					'download_count'    => 1
-				),
-				array(
-					'%d',
-					'%d',
-					'%d',
-					'%d',
-					'%s',
-					'%d'
-				)
-			);
+		if ($result === false) {
+			// Handle error
+			error_log('Error inserting or updating download count: ' . $wpdb->last_error);
 		}
-
-		wp_send_json_success();
 	}
+
 
 
 	public function attachments_template_change( $template ) {
 		print_r( $template );
 		die();
 	}
-
 
 }

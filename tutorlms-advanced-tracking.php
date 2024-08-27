@@ -134,15 +134,15 @@ function tlms_at_create_table() {
 	) $charset_collate;";
 
 	$sql_2 = "CREATE TABLE $table_name_2 (
-	    id BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
-	    course_id VARCHAR(255) NOT NULL,
-	    course_content_id VARCHAR(255) NOT NULL,
-	    user_id BIGINT(20) UNSIGNED NOT NULL,
-	    attachment_id BIGINT(20) UNSIGNED NOT NULL,
-	    date DATE NOT NULL,
-	    download_count INT NOT NULL,
-	    PRIMARY KEY (id),
-	    UNIQUE KEY course_content_user (course_content_id, user_id, course_id)
+		`id` BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+	    `course_id` VARCHAR(255) NOT NULL,
+	    `course_content_id` VARCHAR(255) NOT NULL,
+	    `user_id` BIGINT(20) UNSIGNED NOT NULL,
+	    `attachment_id` BIGINT(20) UNSIGNED NOT NULL,
+	    `date` DATE NOT NULL,
+	    `download_count` INT NOT NULL,
+	    PRIMARY KEY (`id`),
+	    UNIQUE KEY `unique_entry` (`course_id`, `course_content_id`, `user_id`, `attachment_id`, `date`)
 	) $charset_collate;";
 	    require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
 	    dbDelta($sql);

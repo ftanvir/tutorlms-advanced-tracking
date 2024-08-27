@@ -11,9 +11,59 @@ if (!defined('ABSPATH')) {
 }
 
 
-//function get_download_count_data() {
-//
-//}
+function get_download_count_data($period = 'today', $start_date = '', $end_date = '') {
+    global $wpdb;
+
+    $table_name = $wpdb->prefix . 'tlms_at_download_count';
+    $today = wp_date('Y-m-d');
+
+	if ($start_date && $end_date) {
+		$start_date = sanitize_text_field($start_date);
+		$end_date = sanitize_text_field($end_date);
+
+		if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $start_date) || !preg_match('/^\d{4}-\d{2}-\d{2}$/', $end_date)) {
+			return new WP_Error('invalid_date_format', 'Date format should be YYYY-MM-DD');
+		}
+	} else {
+		switch ($period) {
+			case 'today':
+				$start_date = $end_date = $today;
+				break;
+			case 'last7days':
+				$start_date = wp_date('Y-m-d', strtotime('-7 days'));
+				$end_date = $today;
+				break;
+			case 'last30days':
+				$start_date = wp_date('Y-m-d', strtotime('-30 days'));
+				$end_date = $today;
+				break;
+			case 'last90days':
+				$start_date = wp_date('Y-m-d', strtotime('-90 days'));
+				$end_date = $today;
+				break;
+			case 'last365days':
+				$start_date = wp_date('Y-m-d', strtotime('-365 days'));
+				$end_date = $today;
+				break;
+			default:
+				$start_date = $end_date = $today;
+				break;
+		}
+	}
+
+	$query = $wpdb->prepare(
+		"SELECT course_id, course_content_id, SUM(download_count) as total_downloads 
+    FROM $table_name 
+    WHERE date BETWEEN %s AND %s 
+    GROUP BY course_id, course_content_id",
+		$start_date, $end_date
+	);
+
+	$results = $wpdb->get_results($query, ARRAY_A);
+
+	return $results;
+
+}
 
 function get_chart_data($period = 'today', $start_date = '', $end_date = '') {
     global $wpdb;
@@ -205,19 +255,7 @@ $chart_data = get_chart_data($period, $start_date, $end_date);
 
 $chart_data_to_json = json_encode($chart_data);
 
-
-global $wpdb;
-
-$table_name = $wpdb->prefix . 'tlms_at_download_count';
-
-$queryy = "SELECT download_count as total_downloads, course_content_id, course_id FROM $table_name GROUP BY course_content_id";
-$resultss = $wpdb->get_results($queryy, ARRAY_A);
-
-//    $download_count = [];
-//    foreach ($results as $row) {
-//        $download_count[$row['attachment_id']] = $row['total_downloads'];
-//    }
-//ray('resultss', $resultss);
+$resultss = get_download_count_data($period, $start_date, $end_date);
 
 ?>
 
@@ -566,10 +604,6 @@ $resultss = $wpdb->get_results($queryy, ARRAY_A);
                                                         <?php if($row['course_id'] == $course->ID): ?>
                                                             <?php foreach($lessons as $lesson): ?>
                                                                 <?php if($lesson->ID == $row['course_content_id']): ?>
-                                                                <?php ray('course_id', $lesson->ID);
-                                                                      ray('lessons', $lesson);
-                                                                      ray('course_content_id', $row['course_content_id']);
-                                                                ?>
 
                                                                     <div class="list-item-checklist">
                                                                         <div class="tutor-form-check">

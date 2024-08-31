@@ -603,14 +603,25 @@ $resultss = get_download_count_data($period, $start_date, $end_date);
                                                     <?php foreach($resultss as $row): ?>
                                                         <?php if($row['course_id'] == $course->ID): ?>
                                                             <?php foreach($lessons as $lesson): ?>
-                                                                <?php if($lesson->ID == $row['course_content_id']): ?>
-
+                                                                <?php
+                                                                if($lesson->ID == $row['course_content_id']) {
+                                                                    ?>
                                                                     <div class="list-item-checklist">
                                                                         <div class="tutor-form-check">
                                                                             <?php esc_html_e($row['total_downloads']); ?>
                                                                         </div>
                                                                     </div>
-                                                                <?php endif; ?>
+                                                                    <?php
+                                                                } else {
+                                                                    ?>
+                                                                    <div class="list-item-checklist">
+                                                                        <div class="tutor-form-check">
+                                                                            
+                                                                        </div>
+                                                                    </div>
+                                                                    <?php
+                                                                }
+                                                                ?>
                                                             <?php endforeach; ?>
                                                         <?php endif; ?>
                                                     <?php endforeach; ?>

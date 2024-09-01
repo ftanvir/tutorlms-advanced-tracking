@@ -355,6 +355,7 @@ $resultss = get_download_count_data($period, $start_date, $end_date);
                 </div>
             </div>
 
+            <!--
             <div class="tutor-col-md-6 tutor-col-xl-3 tutor-my-8 tutor-my-md-16">
                 <div class="tutor-card tutor-card-secondary tutor-p-24">
                     <div class="tutor-d-flex">
@@ -373,7 +374,7 @@ $resultss = get_download_count_data($period, $start_date, $end_date);
                         </div>
                     </div>
                 </div>
-            </div>
+            </div> -->
 
             <div class="tutor-col-md-6 tutor-col-xl-3 tutor-my-8 tutor-my-md-16">
                 <div class="tutor-card tutor-card-secondary tutor-p-24">
@@ -394,6 +395,7 @@ $resultss = get_download_count_data($period, $start_date, $end_date);
                 </div>
             </div>
 
+            <!--
             <div class="tutor-col-md-6 tutor-col-xl-3 tutor-my-8 tutor-my-md-16">
                 <div class="tutor-card tutor-card-secondary tutor-p-24">
                     <div class="tutor-d-flex">
@@ -409,8 +411,9 @@ $resultss = get_download_count_data($period, $start_date, $end_date);
                         </div>
                     </div>
                 </div>
-            </div>
+            </div> -->
 
+            <!--
             <div class="tutor-col-md-6 tutor-col-xl-3 tutor-my-8 tutor-my-md-16">
                 <div class="tutor-card tutor-card-secondary tutor-p-24">
                     <div class="tutor-d-flex">
@@ -428,8 +431,8 @@ $resultss = get_download_count_data($period, $start_date, $end_date);
                         </div>
                     </div>
                 </div>
-            </div>
-
+            </div> -->
+            <!--
             <div class="tutor-col-md-6 tutor-col-xl-3 tutor-my-8 tutor-my-md-16">
                 <div class="tutor-card tutor-card-secondary tutor-p-24">
                     <div class="tutor-d-flex">
@@ -447,7 +450,9 @@ $resultss = get_download_count_data($period, $start_date, $end_date);
                         </div>
                     </div>
                 </div>
-            </div>
+            </div> -->
+
+
         </div>
     </div>
 
@@ -591,43 +596,48 @@ $resultss = get_download_count_data($period, $start_date, $end_date);
                                                 <?php endif; ?>
                                             </div>
 
-
                                             <!-- counting FileDownloads -->
                                             <div class="tutor-col-md-3">
                                                 <div class="list-item-title tutor-fs-6 tutor-color-black tutor-py-12">
                                                     <?php esc_html_e('Download', 'tutor-pro'); ?>
                                                 </div>
+                                                <?php if (is_array($lessons) && count($lessons)) : ?>
+                                                    <?php foreach ($lessons as $lesson) : ?>
+                                                        <?php
+                                                        $found_status = true;
+                                                        foreach ( $resultss as $download ) {
+                                                            $download['course_id'];
+                                                            $download['course_content_id'];
+                                                            $download['total_downloads'];
 
-<!--                                                If download count then show the download count from $resultss-->
-                                                <?php if(is_array($resultss) && !empty($resultss)): ?>
-                                                    <?php foreach($resultss as $row): ?>
-                                                        <?php if($row['course_id'] == $course->ID): ?>
-                                                            <?php foreach($lessons as $lesson): ?>
-                                                                <?php
-                                                                if($lesson->ID == $row['course_content_id']) {
+                                                            if ( $download['course_id'] == $course->ID ) {
+                                                                if (  $lesson->ID == $download['course_content_id'] ) {
+                                                                    $found_status = false;
                                                                     ?>
                                                                     <div class="list-item-checklist">
                                                                         <div class="tutor-form-check">
-                                                                            <?php esc_html_e($row['total_downloads']); ?>
-                                                                        </div>
-                                                                    </div>
-                                                                    <?php
-                                                                } else {
-                                                                    ?>
-                                                                    <div class="list-item-checklist">
-                                                                        <div class="tutor-form-check">
-                                                                            
+                                                                            <?php echo esc_html(  $download['total_downloads'] ); ?>
                                                                         </div>
                                                                     </div>
                                                                     <?php
                                                                 }
-                                                                ?>
-                                                            <?php endforeach; ?>
-                                                        <?php endif; ?>
+                                                            }
+
+                                                        }
+
+                                                        if ( $found_status == true ) {
+                                                            ?>
+                                                            <div class="list-item-checklist">
+                                                                <div class="tutor-form-check">
+                                                                    0
+                                                                </div>
+                                                            </div>
+                                                            <?php
+                                                        }
+                                                        ?>
                                                     <?php endforeach; ?>
                                                 <?php endif; ?>
                                             </div>
-
                                             <!-- Below markup shows total duration for each videos-->
                                             <div class="tutor-col-md-3">
 
